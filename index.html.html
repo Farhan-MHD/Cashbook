@@ -1,0 +1,798 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Cash Book - Personal Finance</title>
+<!-- Google Fonts & Material Icons -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
+
+<style>
+  /* Reset and base */
+  * {
+    box-sizing: border-box;
+  }
+  body {
+    margin: 0;
+    font-family: 'Inter', sans-serif;
+    background: #ffffff;
+    color: #374151; /* Gray 700 */
+    line-height: 1.5;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    padding: 0 16px 40px;
+  }
+  /* Layout */
+  header {
+    position: sticky;
+    top: 0;
+    background: linear-gradient(90deg, #2563eb 0%, #16a34a 100%);
+    color: white;
+    padding: 16px 24px;
+    border-radius: 0 0 12px 12px;
+    box-shadow: 0 4px 10px rgba(22, 163, 74, 0.3);
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+  }
+  header h1 {
+    font-weight: 7css00;
+    font-size: 1.75rem;
+    margin: 0;
+  }
+  #total-balance {
+    font-weight: 600;
+    font-size: 1.25rem;
+    background: rgba(255 255 255 / 0.25);
+    padding: 8px 16px;
+    border-radius: 16px;
+    min-width: 140px;
+    text-align: center;
+    user-select: none;
+  }
+  
+  main {
+    max-width: 1200px;
+    margin: 32px auto 0;
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
+  
+  @media(min-width: 768px) {
+    main {
+      grid-template-columns: 1fr 2fr;
+    }
+  }
+  
+  /* Form styles */
+  section#entry-form-section {
+    background: #f9fafb; /* Gray 50 */
+    padding: 24px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(55, 65, 81, 0.1);
+  }
+  section#entry-form-section h2 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 16px;
+    color: #111827; /* Gray 900 */
+  }
+  form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  
+  .form-row {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  label {
+    font-weight: 600;
+    margin-bottom: 6px;
+    color: #4b5563; /* Gray 600 */
+  }
+  
+  input[type="text"],
+  input[type="number"],
+  input[type="date"],
+  select,
+  textarea {
+    font-family: 'Inter', sans-serif;
+    font-size: 1rem;
+    padding: 10px 12px;
+    border: 1.5px solid #d1d5db; /* Gray 300 */
+    border-radius: 10px;
+    transition: border-color 0.3s ease;
+    background-color: white;
+    color: #1f2937; /* Gray 800 */
+  }
+  input[type="text"]:focus,
+  input[type="number"]:focus,
+  input[type="date"]:focus,
+  select:focus,
+  textarea:focus {
+    outline: none;
+    border-color: #2563eb; /* Blue 600 */
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.3);
+    background-color: #ffffff;
+  }
+  
+  textarea {
+    resize: vertical;
+    min-height: 60px;
+  }
+  
+  button[type="submit"] {
+    background: linear-gradient(135deg, #16a34a 0%, #4ade80 100%);
+    color: white;
+    font-weight: 700;
+    font-size: 1.1rem;
+    border: none;
+    border-radius: 14px;
+    padding: 14px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+    align-self: flex-start;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  button[type="submit"]:hover,
+  button[type="submit"]:focus {
+    background: linear-gradient(135deg, #15803d 0%, #22c55e 100%);
+    outline: none;
+  }
+  
+  button[type="submit"] .material-icons {
+    font-size: 20px;
+    line-height: 1;
+  }
+
+  /* Income/Expense radio group */
+  .radio-group {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+    margin-top: 6px;
+  }
+  .radio-label {
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    user-select: none;
+  }
+  .radio-label input[type="radio"] {
+    margin: 0;
+    cursor: pointer;
+  }
+  
+  /* Preview Modal */
+  .modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+  }
+  
+  .modal-overlay.active {
+    opacity: 1;
+    visibility: visible;
+  }
+  
+  .modal {
+    background: white;
+    border-radius: 16px;
+    padding: 24px;
+    max-width: 500px;
+    width: 90%;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    transform: translateY(20px);
+    transition: transform 0.3s ease;
+  }
+  
+  .modal-overlay.active .modal {
+    transform: translateY(0);
+  }
+  
+  .modal-header {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 20px;
+    color: #111827;
+    border-bottom: 2px solid #e5e7eb;
+    padding-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  
+  .preview-content {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  
+  .preview-row {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .preview-label {
+    font-weight: 600;
+    color: #6b7280;
+    font-size: 0.9rem;
+  }
+  
+  .preview-value {
+    font-weight: 500;
+    color: #1f2937;
+    padding: 4px 0;
+  }
+  
+  .preview-value.income {
+    color: #16a34a;
+  }
+  
+  .preview-value.expense {
+    color: #dc2626;
+  }
+  
+  .preview-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 24px;
+  }
+  
+  .preview-btn {
+    padding: 12px 24px;
+    border-radius: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    transition: all 0.2s ease;
+  }
+  
+  .preview-btn-confirm {
+    background: #16a34a;
+    color: white;
+  }
+  
+  .preview-btn-confirm:hover {
+    background: #15803d;
+  }
+  
+  .preview-btn-cancel {
+    background: #e5e7eb;
+    color: #4b5563;
+  }
+  
+  .preview-btn-cancel:hover {
+    background: #d1d5db;
+  }
+  
+  /* Entries section */
+  section#entries-section {
+    max-width: 100%;
+    overflow-x: auto;
+  }
+
+  .date-group {
+    background: #f3f4f6; /* Gray 100 */
+    border-radius: 14px;
+    padding: 16px 24px;
+    margin-bottom: 28px;
+    box-shadow: 0 3px 8px rgb(0 0 0 / 0.05);
+  }
+  .date-group-header {
+    font-weight: 700;
+    font-size: 1.25rem;
+    margin-bottom: 12px;
+    color: #111827;
+    border-bottom: 2px solid #d1d5db;
+    padding-bottom: 4px;
+  }
+
+  .subgroup {
+    margin-top: 16px;
+  }
+  .subgroup-header {
+    font-weight: 600;
+    font-size: 1.15rem;
+    margin-bottom: 8px;
+    color: #374151;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  /* Income/Expense icons colors */
+  .subgroup-header .material-icons.income {
+    color: #16a34a; /* Green */
+  }
+  .subgroup-header .material-icons.expense {
+    color: #dc2626; /* Red */
+  }
+  
+  .entry-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  .entry {
+    background: white;
+    border-radius: 12px;
+    padding: 12px 20px;
+    box-shadow: 0 2px 4px rgba(55, 65, 81, 0.06);
+    display: grid;
+    grid-template-columns: 80px 1fr 120px 150px;
+    gap: 12px;
+    align-items: center;
+  }
+  @media(max-width: 480px) {
+    .entry {
+      grid-template-columns: 60px 1fr 1fr;
+      grid-template-rows: auto auto;
+      row-gap: 6px;
+      font-size: 0.9rem;
+    }
+    .entry > .description {
+      grid-column: 1 / 4;
+    }
+    .entry > .time,
+    .entry > .amount {
+      justify-self: start;
+    }
+  }
+
+  .entry > .time {
+    color: #6b7280;
+    font-weight: 600;
+    font-size: 0.9rem;
+    user-select: none;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .entry > .time .material-icons {
+    font-size: 18px;
+    color: #9ca3af;
+  }
+  
+  .entry > .amount {
+    font-weight: 700;
+    color: #16a34a; /* Green for income */
+    text-align: right;
+  }
+  .entry.expense > .amount {
+    color: #dc2626; /* Red for expense */
+  }
+  .entry > .description {
+    color: #4b5563;
+    font-style: italic;
+    overflow-wrap: anywhere;
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>Cash Book</h1>
+  <div id="total-balance" aria-live="polite" aria-atomic="true">$0.00</div>
+</header>
+
+<main>
+  <section id="entry-form-section" aria-labelledby="form-title">
+    <h2 id="form-title">Add Entry</h2>
+    <form id="entry-form" aria-describedby="form-desc">
+      <p id="form-desc" class="sr-only">Enter transaction details including income or expense, amount, description, and date.</p>
+
+      <div class="form-row" role="radiogroup" aria-labelledby="type-label">
+        <label id="type-label" class="form-row">Type</label>
+        <div class="radio-group">
+          <label class="radio-label" for="type-income">
+            <input type="radio" name="type" id="type-income" value="income" required aria-required="true" checked/>
+            <span class="material-icons" aria-hidden="true" style="color:#16a34a;">arrow_circle_up</span>Income
+          </label>
+          <label class="radio-label" for="type-expense">
+            <input type="radio" name="type" id="type-expense" value="expense" />
+            <span class="material-icons" aria-hidden="true" style="color:#dc2626;">arrow_circle_down</span>Expense
+          </label>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <label for="amount">Amount</label>
+        <input id="amount" name="amount" type="number" step="0.01" min="0" inputmode="decimal" required aria-required="true" aria-label="Enter positive amount" placeholder="Positive number" />
+      </div>
+
+      <div class="form-row">
+        <label for="description">Description</label>
+        <textarea id="description" name="description" maxlength="100" placeholder="Optional details"></textarea>
+      </div>
+      
+      <div class="form-row">
+        <label for="date">Date</label>
+        <input id="date" name="date" type="date" required aria-required="true"/>
+      </div>
+
+      <button type="submit" aria-label="Add transaction">
+        <span class="material-icons" aria-hidden="true">add_circle</span>Add Entry
+      </button>
+    </form>
+  </section>
+
+  <section id="entries-section" aria-live="polite">
+    <!-- Entries grouped by date with income/expense nested will be rendered here -->
+  </section>
+</main>
+
+<!-- Preview Modal -->
+<div class="modal-overlay" id="preview-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="material-icons" aria-hidden="true">visibility</span>
+      <span>Confirm Entry</span>
+    </div>
+    <div class="preview-content" id="preview-content">
+      <!-- Preview content will be inserted here -->
+    </div>
+    <div class="preview-actions">
+      <button class="preview-btn preview-btn-cancel" id="preview-cancel">Cancel</button>
+      <button class="preview-btn preview-btn-confirm" id="preview-confirm">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  (() => {
+    'use strict';
+
+    // State: list of transactions
+    let transactions = [];
+    let pendingTransaction = null;
+
+    // DOM refs
+    const form = document.getElementById('entry-form');
+    const entriesSection = document.getElementById('entries-section');
+    const totalBalanceElem = document.getElementById('total-balance');
+    const dateInput = form.querySelector('#date');
+    const previewModal = document.getElementById('preview-modal');
+    const previewContent = document.getElementById('preview-content');
+    const previewCancelBtn = document.getElementById('preview-cancel');
+    const previewConfirmBtn = document.getElementById('preview-confirm');
+
+    // Set date input max and default to today
+    const today = new Date().toISOString().split('T')[0];
+    dateInput.value = today;
+    dateInput.max = today;
+
+    // Format utilities
+    const formatCurrency = (num) => {
+      return num.toLocaleString('en-US', {style: 'currency', currency: 'USD'});
+    };
+    const formatDateLong = (isoDateStr) => {
+      const options = { year: 'numeric', month: 'long', day: 'numeric' };
+      const date = new Date(isoDateStr);
+      return date.toLocaleDateString(undefined, options);
+    };
+    const formatTimeShort = (dateObj) => {
+      return dateObj.toLocaleTimeString(undefined, {hour: '2-digit', minute: '2-digit', hour12: false});
+    };
+
+    // Show preview modal
+    function showPreview(data) {
+      previewContent.innerHTML = '';
+      
+      // Create HTML for the preview
+      const now = new Date();
+      const previewHTML = `
+        <div class="preview-row">
+          <span class="preview-label">Type</span>
+          <span class="preview-value ${data.type}">
+            <span class="material-icons" aria-hidden="true" style="vertical-align: middle;">
+              ${data.type === 'income' ? 'arrow_circle_up' : 'arrow_circle_down'}
+            </span>
+            ${data.type.charAt(0).toUpperCase() + data.type.slice(1)}
+          </span>
+        </div>
+        <div class="preview-row">
+          <span class="preview-label">Amount</span>
+          <span class="preview-value ${data.type}">
+            ${data.type === 'income' ? '+' : '-'}${formatCurrency(parseFloat(data.amount))}
+          </span>
+        </div>
+        <div class="preview-row">
+          <span class="preview-label">Date</span>
+          <span class="preview-value">${data.date}</span>
+        </div>
+        <div class="preview-row">
+          <span class="preview-label">Time</span>
+          <span class="preview-value">${formatTimeShort(now)}</span>
+        </div>
+        <div class="preview-row" style="grid-column: span 2">
+          <span class="preview-label">Description</span>
+          <span class="preview-value">${data.description || 'No description'}</span>
+        </div>
+      `;
+      
+      previewContent.innerHTML = previewHTML;
+      previewModal.classList.add('active');
+    }
+
+    // Hide preview modal
+    function hidePreview() {
+      previewModal.classList.remove('active');
+    }
+
+    // Group transactions by date (YYYY-MM-DD)
+    const groupTransactionsByDate = (txs) => {
+      return txs.reduce((acc, tx) => {
+        const dateKey = tx.date.split('T')[0];
+        if (!acc[dateKey]) acc[dateKey] = [];
+        acc[dateKey].push(tx);
+        return acc;
+      }, {});
+    };
+
+    // Group transactions by type inside each date group
+    const groupTransactionsByDateAndType = (txs) => {
+      const grouped = groupTransactionsByDate(txs);
+      // For each date, create object with income and expense arrays
+      for (const date in grouped) {
+        const incomeTxs = grouped[date].filter(tx => tx.type === 'income');
+        const expenseTxs = grouped[date].filter(tx => tx.type === 'expense');
+        grouped[date] = { income: incomeTxs, expense: expenseTxs };
+      }
+      return grouped;
+    };
+
+    // Render entries grouped by date and nested by type
+    function renderEntries() {
+      entriesSection.innerHTML = '';
+
+      if (!transactions.length) {
+        entriesSection.innerHTML = '<p style="color: #6b7280; font-style: italic;">No transactions added yet.</p>';
+        totalBalanceElem.textContent = formatCurrency(0);
+        return;
+      }
+
+      // Sort transactions descending by date and time before grouping
+      transactions.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+      // Group by date and type
+      const grouped = groupTransactionsByDateAndType(transactions);
+
+      // Calculate total balance
+      const total = transactions.reduce((sum, tx) => {
+        // Income positive add, expense subtract
+        return tx.type === 'income' ? sum + tx.amount : sum - tx.amount;
+      }, 0);
+      totalBalanceElem.textContent = formatCurrency(total);
+
+      // Sort dates descending
+      const sortedDates = Object.keys(grouped).sort((a,b) => new Date(b) - new Date(a));
+
+      for (const date of sortedDates) {
+        const groupDiv = document.createElement('section');
+        groupDiv.className = 'date-group';
+        groupDiv.setAttribute('aria-label', `Transactions for ${formatDateLong(date)}`);
+
+        const header = document.createElement('h3');
+        header.className = 'date-group-header';
+        header.textContent = formatDateLong(date);
+        groupDiv.appendChild(header);
+
+        // Subgroups container
+        // Income subgroup
+        if (grouped[date].income.length) {
+          const incomeSection = document.createElement('div');
+          incomeSection.className = 'subgroup';
+          const incomeHeader = document.createElement('h4');
+          incomeHeader.className = 'subgroup-header';
+          incomeHeader.innerHTML = '<span class="material-icons income" aria-hidden="true">arrow_circle_up</span> Income';
+          incomeSection.appendChild(incomeHeader);
+
+          const incomeList = document.createElement('div');
+          incomeList.className = 'entry-list';
+
+          // Sort by time ascending (earliest first)
+          grouped[date].income.sort((a,b) => new Date(a.date) - new Date(b.date));
+
+          for (const tx of grouped[date].income) {
+            incomeList.appendChild(createEntryElement(tx));
+          }
+          incomeSection.appendChild(incomeList);
+          groupDiv.appendChild(incomeSection);
+        }
+
+        // Expense subgroup
+        if (grouped[date].expense.length) {
+          const expenseSection = document.createElement('div');
+          expenseSection.className = 'subgroup';
+          const expenseHeader = document.createElement('h4');
+          expenseHeader.className = 'subgroup-header';
+          expenseHeader.innerHTML = '<span class="material-icons expense" aria-hidden="true">arrow_circle_down</span> Expense';
+          expenseSection.appendChild(expenseHeader);
+
+          const expenseList = document.createElement('div');
+          expenseList.className = 'entry-list';
+
+          // Sort by time ascending (earliest first)
+          grouped[date].expense.sort((a,b) => new Date(a.date) - new Date(b.date));
+
+          for (const tx of grouped[date].expense) {
+            expenseList.appendChild(createEntryElement(tx));
+          }
+          expenseSection.appendChild(expenseList);
+          groupDiv.appendChild(expenseSection);
+        }
+
+        entriesSection.appendChild(groupDiv);
+      }
+    }
+
+    // Create a single entry DOM element
+    function createEntryElement(tx) {
+      const entry = document.createElement('article');
+      entry.className = 'entry';
+      if (tx.type === 'expense') {
+        entry.classList.add('expense');
+      }
+      entry.setAttribute('tabindex', '0');
+      entry.setAttribute('aria-label', `Transaction at ${formatTimeShort(new Date(tx.date))}, amount ${formatCurrency(tx.amount)}, description: ${tx.description || 'none'}`);
+
+      // Time (with icon)
+      const timeDiv = document.createElement('div');
+      timeDiv.className = 'time';
+      const timeIcon = document.createElement('span');
+      timeIcon.className = 'material-icons';
+      timeIcon.setAttribute('aria-hidden', 'true');
+      timeIcon.textContent = 'schedule';
+      timeDiv.appendChild(timeIcon);
+      const timeText = document.createTextNode(formatTimeShort(new Date(tx.date)));
+      timeDiv.appendChild(timeText);
+      entry.appendChild(timeDiv);
+
+      // Amount
+      const amountDiv = document.createElement('div');
+      amountDiv.className = 'amount';
+      amountDiv.textContent = tx.type === 'income' ? formatCurrency(tx.amount) : '-' + formatCurrency(tx.amount);
+      entry.appendChild(amountDiv);
+
+      // Description
+      const descDiv = document.createElement('div');
+      descDiv.className = 'description';
+      descDiv.textContent = tx.description || '–';
+      entry.appendChild(descDiv);
+
+      return entry;
+    }
+
+    // Create transaction object from form data
+    function createTransaction(data) {
+      const {amount, description, date, type} = data;
+      if (!type) return null;
+
+      const amtNumRaw = parseFloat(amount);
+      if (isNaN(amtNumRaw) || amtNumRaw <= 0) return null;
+
+      // Compose ISO string with date + current time
+      const dateOnly = new Date(date);
+      const now = new Date();
+
+      // Use date from form, but time as now if date == today else 12:00 (midday)
+      let isoString;
+      const todayStr = new Date().toISOString().split('T')[0];
+      if (date === todayStr) {
+        // Use actual current time
+        isoString = new Date().toISOString();
+        // But overwrite just the date part with chosen date, keep the time
+        // So swap date part only
+        const timePart = isoString.split('T')[1];
+        isoString = date + 'T' + timePart;
+      } else {
+        // Use midday ISO time for past or future dates
+        isoString = date + 'T12:00:00.000Z';
+      }
+
+      return {
+        id: crypto.randomUUID(),
+        amount: amtNumRaw,
+        description: description.trim(),
+        date: isoString,
+        type,
+      };
+    }
+
+    // Add transaction to list
+    function addTransaction(transaction) {
+      if (!transaction) return;
+      transactions.push(transaction);
+      renderEntries();
+    }
+
+    // Form submit handler - now shows preview instead of adding directly
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const formData = new FormData(form);
+      const data = {
+        amount: formData.get('amount'),
+        description: formData.get('description'),
+        date: formData.get('date'),
+        type: formData.get('type')
+      };
+      
+      // Create and store the pending transaction
+      pendingTransaction = createTransaction(data);
+      
+      if (pendingTransaction) {
+        showPreview(data);
+      }
+    });
+
+    // Preview confirm handler
+    previewConfirmBtn.addEventListener('click', () => {
+      if (pendingTransaction) {
+        addTransaction(pendingTransaction);
+        pendingTransaction = null;
+        
+        // Reset form
+        form.reset();
+        dateInput.value = today;
+        form.querySelector('#type-income').checked = true;
+        
+        hidePreview();
+      }
+    });
+
+    // Preview cancel handler
+    previewCancelBtn.addEventListener('click', hidePreview);
+
+    // Close modal when clicking outside content
+    previewModal.addEventListener('click', (e) => {
+      if (e.target === previewModal) {
+        hidePreview();
+      }
+    });
+
+    // Accessibility helper: sr-only class
+    const style = document.createElement('style');
+    style.textContent = `.sr-only { 
+      position: absolute !important; 
+      width: 1px !important; 
+      height: 1px !important; 
+      padding: 0 !important; 
+      margin: -1px !important; 
+      overflow: hidden !important; 
+      clip: rect(0,0,0,0) !important; 
+      white-space: nowrap !important; 
+      border: 0 !important;
+    }`;
+    document.head.appendChild(style);
+
+    // Initial render empty
+    renderEntries();
+  })();
+</script>
+
+</body>
+</html>
