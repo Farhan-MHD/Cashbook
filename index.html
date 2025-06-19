@@ -702,4 +702,97 @@
       // Use date from form, but time as now if date == today else 12:00 (midday)
       let isoString;
       const todayStr = new Date().toISOString().split('T')[0];
-  
+        if (date === todayStr) {
+        // Use actual current time
+        isoString = new Date().toISOString();
+        // But overwrite just the date part with chosen date, keep the time
+        // So swap date part only
+        const timePart = isoString.split('T')[1];
+        isoString = date + 'T' + timePart;
+      } else {
+        // Use midday ISO time for past or future dates
+        isoString = date + 'T12:00:00.000Z';
+      }
+
+      return {
+        id: crypto.randomUUID(),
+        amount: amtNumRaw,
+        description: description.trim(),
+        date: isoString,
+        type,
+      };
+    }
+
+    // Add transaction to list
+    function addTransaction(transaction) {
+      if (!transaction) return;
+      transactions.push(transaction);
+      renderEntries();
+    }
+
+    // Form submit handler - now shows preview instead of adding directly
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const formData = new FormData(form);
+      const data = {
+        amount: formData.get('amount'),
+        description: formData.get('description'),
+        date: formData.get('date'),
+        type: formData.get('type')
+      };
+
+      // Create and store the pending transaction
+      pendingTransaction = createTransaction(data);
+
+      if (pendingTransaction) {
+        showPreview(data);
+      }
+    });
+
+    // Preview confirm handler
+    previewConfirmBtn.addEventListener('click', () => {
+      if (pendingTransaction) {
+        addTransaction(pendingTransaction);
+        pendingTransaction = null;
+
+        // Reset form
+        form.reset();
+        dateInput.value = today;
+        form.querySelector('#type-income').checked = true;
+
+        hidePreview();
+      }
+    });
+
+    // Preview cancel handler
+    previewCancelBtn.addEventListener('click', hidePreview);
+
+    // Close modal when clicking outside content
+    previewModal.addEventListener('click', (e) => {
+      if (e.target === previewModal) {
+        hidePreview();
+      }
+    });
+
+    // Accessibility helper: sr-only class
+    const style = document.createElement('style');
+    style.textContent = `.sr-only { 
+      position: absolute !important; 
+      width: 1px !important; 
+      height: 1px !important; 
+      padding: 0 !important; 
+      margin: -1px !important; 
+      overflow: hidden !important; 
+      clip: rect(0,0,0,0) !important; 
+      white-space: nowrap !important; 
+      border: 0 !important;
+    }`;
+    document.head.appendChild(style);
+
+    // Initial render empty
+    renderEntries();
+  })();
+</script>
+
+</body>
+</html>
