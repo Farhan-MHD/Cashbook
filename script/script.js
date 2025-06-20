@@ -23,7 +23,7 @@
 
     // Format utilities
     const formatCurrency = (num) => {
-      return num.toLocaleString('en-US', {style: 'currency', currency: 'USD'});
+      return num.toLocaleString('ta-LK', {style: 'currency', currency: 'LKR'});
     };
     const formatDateLong = (isoDateStr) => {
       const options = { year: 'numeric', month: 'long', day: 'numeric' };
